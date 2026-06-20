@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Watermark Pro</title>
+    <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+    
+    <style>
+        /* --- CSS: Καθαρό, SaaS UI --- */
+        body {
+            background-color: #f3f4f6;
+            color: #1f2937;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background-color: #ffffff;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            width: 350px;
+            text-align: center;
+            border: 1px solid #e5e7eb;
+        }
+
+        h2 {
+            margin-top: 0;
+            color: #111827;
+            font-size: 1.5em;
+        }
+
+        p.subtitle {
+            color: #6b7280;
+            font-size: 0.9em;
+            margin-bottom: 25px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            font-size: 0.85em;
+            color: #4b5563;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        input[type="text"], input[type="file"] {
+            width: 100%;
+            padding: 10px;
+            border: 2px dashed #d1d5db;
+            border-radius: 8px;
+            box-sizing: border-box;
+            background-color: #f9fafb;
+            transition: 0.2s;
+        }
+
+        input[type="text"] {
+            border-style: solid;
+        }
+
+        input[type="file"]:hover {
+            border-color: #3b82f6;
+            background-color: #eff6ff;
+        }
+
+        button {
+            width: 100%;
+            background-color: #3b82f6;
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+            margin-top: 10px;
+        }
+
+        button:hover { background-color: #2563eb; }
+        button:disabled { background-color: #9ca3af; cursor: not-allowed; }
+
+        #statusMsg {
+            margin-top: 20px;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>PDF Watermark Pro</h2>
+        <p class="subtitle">Προστάτευσε τα ψηφιακά σου αρχεία με ένα κλικ.</p>
+        
+        <div class="input-group">
+            <label>1. Επίλεξε το αρχείο PDF</label>
+            <input type="file" id="pdfInput" accept="application/pdf">
+        </div>
+
+        <div class="input-group">
+            <label>2. Κείμενο Υδατογραφήματος</label>
+            <input type="text" id="watermarkText" placeholder="π.χ. Αγοράστηκε από: email@gmail.com">
+        </div>
+
+        <button id="processBtn" onclick="applyWatermark()">Προσθήκη Watermark</button>
+
+        <div id="statusMsg"></div>
+    </div>
+
+    <script>
+        async function applyWatermark() {
+            const fileInput = document.getElementById('pdfInput');
+            const watermarkText = document.getElementById('watermarkText').value;
+            const statusMsg = document.getElementById('statusMsg');
+            const btn = document.getElementById('processBtn');
+
+            // Έλεγχοι
+            if (fileInput.files.length === 0) {
+                alert("Παρακαλώ επίλεξε ένα αρχείο PDF.");
+                return;
+            }
+            if (!watermarkText) {
+                alert("Παρακαλώ γράψε το κείμενο για το υδατογράφημα.");
+                return;
+            }
+
+            // Ενημέρωση UI
+            btn.disabled = true;
+            btn.innerText = "Επεξεργασία...";
+            statusMsg.style.color = "#3b82f6";
+            statusMsg.innerText = "Το αρχείο ετοιμάζεται...";
+
+            try {
+                // Φορτώνουμε τις λειτουργίες από τη βιβλιοθήκη pdf-lib
+                const { PDFDocument, rgb, degrees } = PDFLib;
+
+                // Διαβάζουμε το αρχείο που ανέβασε ο χρήστης
+                const file = fileInput.files[0];
+                const arrayBuffer = await file.arrayBuffer();
+
+                // Φορτώνουμε το PDF στη μνήμη
+                const pdfDoc = await PDFDocument.load(arrayBuffer);
+                const pages = pdfDoc.getPages();
+
+                // Περνάμε από κάθε σελίδα και "ζωγραφίζουμε" το κείμενο
+                pages.forEach(page => {
+                    const { width, height } = page.getSize();
+                    page.drawText(watermarkText, {
+                        x: width / 4,           // Ξεκινάει περίπου από τη μέση
+                        y: height / 4,          // Ύψος
+                        size: 40,               // Μέγεθος γραμματοσειράς
+                        color: rgb(0.8, 0.8, 0.8), // Ανοιχτό γκρι χρώμα
+                        rotate: degrees(45),    // Διαγώνια κλίση 45 μοιρών
+                        opacity: 0.5            // Ημιδιάφανο (50%) για να διαβάζεται το κείμενο από πίσω
+                    });
+                });
+
+                // Αποθηκεύουμε το νέο PDF
+                const pdfBytes = await pdfDoc.save();
+
+                // Δημιουργούμε ένα "εικονικό" αρχείο για να το κατεβάσει ο χρήστης
+                const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+                const downloadLink = document.createElement('a');
+                downloadLink.href = URL.createObjectURL(blob);
+                downloadLink.download = "Protected_" + file.name;
+                
+                // Κάνουμε κλικ αυτόματα στο link για να ξεκινήσει το κατέβασμα
+                downloadLink.click();
+
+                // Επαναφορά του UI
+                statusMsg.style.color = "#10b981"; // Πράσινο
+                statusMsg.innerText = "✅ Το αρχείο κατέβηκε επιτυχώς!";
+                btn.disabled = false;
+                btn.innerText = "Προσθήκη Watermark";
+
+            } catch (error) {
+                console.error(error);
+                statusMsg.style.color = "#ef4444"; // Κόκκινο
+                statusMsg.innerText = "❌ Υπήρξε κάποιο σφάλμα.";
+                btn.disabled = false;
+                btn.innerText = "Προσθήκη Watermark";
+            }
+        }
+    </script>
+
+</body>
+</html>
