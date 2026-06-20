@@ -1,5 +1,7 @@
 # PDF Watermark Pro 🛡️
 
+![PDF Watermark Pro UI](pdf-watermark-pro.png)
+
 A clean, lightweight web application designed to protect digital products. It allows users to dynamically add custom text watermarks (like a buyer's email) to any PDF file with a single click, preventing unauthorized sharing and piracy.
 
 ## 🚀 Features
@@ -8,11 +10,11 @@ A clean, lightweight web application designed to protect digital products. It al
 * **Instant Processing:** Processes the PDF locally/securely and returns the watermarked file.
 
 ## 🛠️ Built With
-* **Python** (Backend & PDF processing logic - e.g., PyPDF2)
+* **Python** (Backend & PDF processing logic)
 * **HTML/CSS/JS** (Frontend interface)
 
 ## 💡 Use Case
-I built this tool to automate the protection of my own digital educational products. By stamping each PDF with the respective buyer's email, it creates a psychological and practical barrier against unauthorized distribution.
+I built this tool to automate the protection of educational digital products and study guides. By stamping each PDF with the respective buyer's email, it creates a psychological and practical barrier against unauthorized distribution.
 
 ## 👨‍💻 Author
-**ItsDim** - [GitHub Profile](https://github.com/ItsD1m)
+**ItsDim**
